@@ -1,0 +1,21 @@
+version: '3'
+services:
+  nextjs:
+    container_name: yeast_client-1
+    image: yeast_client
+    ports:
+      - "3000:3000"  # Expose the Next.js app on port 3000
+    networks:
+      - app-network
+
+  flask:
+    container_name: yeast_server-1
+    image: yeast_server
+    ports:
+      - "5000:5000"  # Expose the Flask app on port 5000
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
