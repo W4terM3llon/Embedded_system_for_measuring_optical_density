@@ -1,15 +1,28 @@
-from machine import Pin, ADC
+from machine import Pin, ADC, PWM
 import time
 
-A0_NO = 26
-A1_NO = 25
-a0_pin = Pin(A0_NO, Pin.OUT)
-a1_pin = ADC(A1_NO)
+a1_pin = ADC(25)
 a1_pin.atten(ADC.ATTN_11DB)
 a1_pin.width(ADC.WIDTH_10BIT)
-while True:
-    a0_pin.value(1 if a0_pin.value() == 0 else 0)
-    print(a1_pin.read())
-    time.sleep(0.5)
 
-    
+pow2_16 = 2**16-1
+a2_pin = PWM(Pin(33), freq=4_000, duty_u16=0)
+
+def saveReading(data):
+    with open("sensorReadings.csv", 'a') as f:
+        f.write(data)
+        f.write("\n")
+
+duty = 0
+while True:
+    a2_pin.duty_u16(duty)
+    reading = a1_pin.read_uv()
+    saveReading(reading)
+    print(reading)
+
+    duty = duty+100
+    time.sleep(0.1)
+    if duty > pow2_16:
+        break
+
+
