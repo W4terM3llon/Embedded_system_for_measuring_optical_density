@@ -27,7 +27,7 @@ def CreateAIOPlot():
     for i in range(1, 6):
         readings = getReadings(f"data{i}.txt")
         adcByDutyNp = np.array(readings, dtype=float)
-        plt.scatter(adcByDutyNp[:, 1], adcByDutyNp[:, 0], labe)
+        plt.scatter(adcByDutyNp[:, 1], adcByDutyNp[:, 0])
 
     plt.legend(loc="upper left")
 
