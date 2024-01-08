@@ -64,7 +64,7 @@ class Measurement:
         self.linesCountOffset = 1000
         self.fileLinesCount = self.__getFileLinesCount__()
 
-        self.lastMeasurementTime = time.ticks_ms()
+        self.lastMeasurementTime = float('-inf')
         self.measurementIntervalInS = 2000
 
     def readAndSaveWhenTimeIsRight(self, currentTime):
