@@ -2,38 +2,77 @@ from machine import Pin, ADC, PWM
 import time
 import constants as cnst
 
-pow2_16 = 2**16-1
-pow2_12 = 2**12-1
+class Blinker():
+    def __init__(self, pinNo):
+        self.pin = Pin(pinNo, Pin.OUT)
+        self.lastBlinkTime = time.ticks_ms()
+        self.blinkTimeIntervalInS = 500
 
-class Measurement:
+    def blinkIfTimeIsRight(self, currentTime):
+        if currentTime - self.lastBlinkTime >= self.blinkTimeIntervalInS:
+            self.lastBlinkTime = currentTime 
+            self.pin.value(not self.pin.value())
+            print("Blink")
+
+class LoopController():
+    def __init__(self, pinNo):
+        self.pin = Pin(pinNo, Pin.IN)
+        self.isRunning = True
+    
+    def terminateIfButtonPressed(self):
+        if self.pin.value() == 1:
+            self.isRunning = False
+            print("Program terminated")
+
+class MeasurementLight():
     def __init__(self, duty, freq):
         self.duty = duty
         self.freq = freq
+        self.a2_pin = PWM(Pin(33), freq=self.freq, duty=self.duty)
         
-        self.a1_pin = ADC(25)
+
+class Measurement:
+    def __init__(self, pinNo):
+        self.a1_pin = ADC(pinNo)
         self.a1_pin.atten(ADC.ATTN_11DB)
         self.a1_pin.width(ADC.WIDTH_12BIT)
 
-        self.a2_pin = PWM(Pin(33), freq=self.freq, duty=self.duty)
+        self.linesCountOffset = 1000
+        self.fileLinesCount = self.__getFileLinesCount__()
 
-    def measure(self):
-        self.a2_pin.duty(self.duty)
-        self.a2_pin.freq(self.freq)
+        self.lastMeasurementTime = time.ticks_ms()
+        self.measurementIntervalInS = 2000
 
-        reading = self.a1_pin.read_uv()
-        scaledReading = (reading - cnst.minDutyReadUv) / (cnst.maxDutyReadUv - cnst.minDutyReadUv)
-        print(scaledReading)
+    def readAndSaveWhenTimeIsRight(self, currentTime):
+        if currentTime - self.lastMeasurementTime >= self.measurementIntervalInS:
+            self.lastMeasurementTime = currentTime 
 
-        file.write(f"{scaledReading}, {self.duty}\n")
-        time.sleep(0.0001)
+            #reading = self.a1_pin.read_uv() not used for now
+            with open("measurements.txt", 'a') as file:
+                file.write(f"{currentTime}, {self.linesCountOffset + self.fileLinesCount}\n")
+            print("Measurement saved")
+    
+    def __getFileLinesCount__(self):
+        try:
+            with open("measurements.txt", 'r') as file:
+                return len(file.readlines())
+        except:#FileNotFoundError
+            with open("measurements.txt", 'w') as file:
+                return 0
 
-freq = {1: 200_000, 2: 200_000, 3: 10_000, 4: 100_000, 5: 4_000_000}
-for i in range(1, 2): # change which measurements are done
-    measurement = Measurement(0, freq[i])
-    with open(f'data{i}.txt','w') as file:
-        for duty in range(1023):
-            measurement.duty = duty
-            measurement.measure()
 
+def run():
+    measurement = Measurement(25)
+    blinker = Blinker(26)
+    loopController = LoopController(34)
+    while loopController.isRunning:
+        loopController.terminateIfButtonPressed()
+
+        currentTime = time.ticks_ms()
+        blinker.blinkIfTimeIsRight(currentTime)
+        measurement.readAndSaveWhenTimeIsRight(currentTime)
+
+if __name__ == "__main__":
+    run()
 
 
