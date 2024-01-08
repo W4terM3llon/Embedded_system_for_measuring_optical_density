@@ -2,8 +2,26 @@ from machine import Pin, ADC, PWM
 import time
 import constants as cnst
 
-class Blinker():
+
+class Observer():
+    def onNotificationReceived(self):
+        pass
+
+class Observed():
+    def __init__(self):
+        self.__observers__ = []
+
+    def addObserver(self, observer):
+        self.__observers__.append(observer)
+
+    def notifyObservers(self, ):
+        for observer in self.__observers__:
+            observer.onNotificationReceived()
+    
+
+class Blinker(Observer):
     def __init__(self, pinNo):
+        super().__init__()
         self.pin = Pin(pinNo, Pin.OUT)
         self.lastBlinkTime = time.ticks_ms()
         self.blinkTimeIntervalInS = 500
@@ -14,14 +32,20 @@ class Blinker():
             self.pin.value(not self.pin.value())
             print("Blink")
 
-class LoopController():
+    def onNotificationReceived(self):
+        self.pin.value(0)
+
+
+class LoopController(Observed):
     def __init__(self, pinNo):
+        super().__init__()
         self.pin = Pin(pinNo, Pin.IN)
         self.isRunning = True
     
     def terminateIfButtonPressed(self):
         if self.pin.value() == 1:
             self.isRunning = False
+            self.notifyObservers()
             print("Program terminated")
 
 class MeasurementLight():
@@ -49,7 +73,8 @@ class Measurement:
 
             #reading = self.a1_pin.read_uv() not used for now
             with open("measurements.txt", 'a') as file:
-                file.write(f"{currentTime}, {self.linesCountOffset + self.fileLinesCount}\n")
+                file.write(f"{(int)(currentTime/1000)}, {self.linesCountOffset + self.fileLinesCount}\n")
+                self.fileLinesCount+=1
             print("Measurement saved")
     
     def __getFileLinesCount__(self):
@@ -65,6 +90,9 @@ def run():
     measurement = Measurement(25)
     blinker = Blinker(26)
     loopController = LoopController(34)
+
+    loopController.addObserver(blinker)
+
     while loopController.isRunning:
         loopController.terminateIfButtonPressed()
 
