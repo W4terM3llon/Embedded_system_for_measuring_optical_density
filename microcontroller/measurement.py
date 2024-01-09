@@ -15,17 +15,22 @@ class Measurement:
 
         self.lastMeasurementTime = float('-inf')
         self.measurementIntervalInS = 2000
+        self.measurementsOverTimespanSum = 0
+        self.measurementsOverTimespanCount = 0
 
     def readAndSaveWhenTimeIsRight(self, currentTime):
-        print(self.__read__())
+        od = self.__getCorrectOD__()
+        self.measurementsOverTimespanSum += od
+        self.measurementsOverTimespanCount += 1
         if currentTime - self.lastMeasurementTime >= self.measurementIntervalInS:
             self.lastMeasurementTime = currentTime 
-
+            averageOd = self.measurementsOverTimespanSum/self.measurementsOverTimespanCount
             with open("measurements.txt", 'a') as file:
-                od = self.__getCorrectOD__()
-                file.write(f"{od}, {(int)(currentTime/1000)}, {self.linesCountOffset + self.fileLinesCount}\n")
+                file.write(f"{averageOd}, {(int)(currentTime/1000)}, {self.linesCountOffset + self.fileLinesCount}\n")
                 self.fileLinesCount+=1
-            print("Measurement saved")
+            print(f"Measurement saved (OD:{averageOd}))")
+            self.measurementsOverTimespanSum = 0
+            self.measurementsOverTimespanCount = 0
     
     def __getFileLinesCount__(self):
         try:
