@@ -11,10 +11,10 @@ class Measurement:
         self.pin.width(ADC.WIDTH_12BIT)
 
         self.linesCountOffset = 1000
-        self.fileLinesCount = self.__getFileLinesCount__()
+        self.fileLinesCount = 0
 
         self.lastMeasurementTime = float('-inf')
-        self.measurementIntervalInS = 2000
+        self.measurementIntervalInS = 30*1000
         self.measurementsOverTimespanSum = 0
         self.measurementsOverTimespanCount = 0
 
@@ -31,14 +31,6 @@ class Measurement:
             print(f"Measurement saved (OD:{averageOd}))")
             self.measurementsOverTimespanSum = 0
             self.measurementsOverTimespanCount = 0
-    
-    def __getFileLinesCount__(self):
-        try:
-            with open("measurements.txt", 'r') as file:
-                return len(file.readlines())
-        except:#FileNotFoundError
-            with open("measurements.txt", 'w') as file:
-                return 0
 
     def __read__(self):
             reading = self.pin.read_uv()
