@@ -9,9 +9,35 @@ from app.model.YeastGrowthReading import YeastGrowthReading
 
 
 def HandleGetYeastGrowthImage():
-    data = np.array(ReadDataFromFileAsLists("YeastGrowthData.csv"))
-    graphAsBytes = RenderPlot(data)
-    return graphAsBytes
+    #data = np.array(ReadDataFromFileAsLists("YeastGrowthData.csv"))
+    #graphAsBytes = RenderPlot(data)
+    #return graphAsBytes
+    data = None
+    with open('measurementsWeekend3.txt', 'r') as f:
+        lines = f.readlines()
+        data = np.empty((len(lines), 2))
+        for i in range(len(lines)):
+            variables = lines[i].split(', ')
+            data[i, :] = [variables[0], variables[1]]
+
+    mtplUse('SVG')
+
+    plt.xlabel("Time")
+    plt.ylabel("Od")
+    plt.title("Yeast growth")
+
+    fig, ax = plt.subplots()
+    plt.xticks(rotation=45, ha='right')
+    ax.plot(data[:, 1], data[:, 0])
+
+    # save as a file just in case
+    plt.savefig('YeastGrowth.png', format="png")
+
+    image_bytes = io.BytesIO()
+    plt.savefig(image_bytes, format="png")
+    image_bytes.seek(0)
+
+    return image_bytes.read()
 
 
 def RenderPlot(data) -> bytes:
