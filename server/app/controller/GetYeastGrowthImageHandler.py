@@ -8,12 +8,12 @@ import numpy as np
 from app.model.YeastGrowthReading import YeastGrowthReading
 
 
-def HandleGetYeastGrowthImage():
+def HandleGetYeastGrowthImage(id):
     #data = np.array(ReadDataFromFileAsLists("YeastGrowthData.csv"))
     #graphAsBytes = RenderPlot(data)
     #return graphAsBytes
     data = None
-    with open('measurementsWeekend3.txt', 'r') as f:
+    with open(f'measurements{id}.txt', 'r') as f:
         lines = f.readlines()
         data = np.empty((len(lines), 2))
         for i in range(len(lines)):
@@ -22,13 +22,13 @@ def HandleGetYeastGrowthImage():
 
     mtplUse('SVG')
 
-    plt.xlabel("Time")
-    plt.ylabel("Od")
-    plt.title("Yeast growth")
 
     fig, ax = plt.subplots()
+    plt.xlabel("Time (h)")
+    plt.ylabel("OD600")
+    plt.title(f"Yeast growth (measurement no. {id})")
     plt.xticks(rotation=45, ha='right')
-    ax.plot(data[:, 1], data[:, 0])
+    ax.plot(data[:, 1]/3600, data[:, 0])
 
     # save as a file just in case
     plt.savefig('YeastGrowth.png', format="png")
