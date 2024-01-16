@@ -21,9 +21,10 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from app.view import GetYeastGrowthImage, RecordYeastGrowth
+    from app.view import GetYeastGrowthImage, RecordYeastGrowth, GetMeasurementFileNames
     app.register_blueprint(GetYeastGrowthImage.bp)
     app.register_blueprint(RecordYeastGrowth.bp)
+    app.register_blueprint(GetMeasurementFileNames.bp)
 
     return app
 

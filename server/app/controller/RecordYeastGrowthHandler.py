@@ -1,7 +1,4 @@
-import csv
-
-
-def HandleRecordYeastGrowth(growthIntensity, dateTime):
-    with open('YeastGrowthData.csv', 'a', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow([growthIntensity, dateTime])
+def HandleRecordYeastGrowth(fileName, OD600, time):
+    with open(f'./measurements/{fileName}', 'a') as f:
+        print(f'./measurements/{fileName}')
+        f.write(f'{OD600}, {time}, {-1}\n')

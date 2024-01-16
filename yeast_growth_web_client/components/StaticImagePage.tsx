@@ -7,55 +7,63 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { blob } from "stream/consumers";
 import downloadSvg from '../public/download-svgrepo-com.svg'
 
+type MeasurementFileNamesType =
+{
+  measurementFileNames: string[];
+}
+
 export function StaticImagePage() {
+  const [measurementFileNames, setMeasurementFileNames] = useState<string[]>([]);
   const [data, setData] = useState<any>(null);
   const [isLoading, setLoading] = useState<any>(true);
 
-  const [measurementId, setMeasurementId] = useState<number>(1);
+  const [chosenMeasurementFileName, setChosenMeasurementFileName] = useState<string>("");
+  
+  const onFileNameChosen = useCallback(
+    (measurementFileName: string) => {
+      setChosenMeasurementFileName(measurementFileName)
 
+      fetch(
+        "http://127.0.0.1:5000/api/v1/yeastGrowthPlot?" +
+          new URLSearchParams({ id: measurementFileName }),
+        {
+          method: "GET",
+        }
+      )
+        .then((response) => response.blob())
+        .then((blob) => {
+          setData(blob);
+          setLoading(false);
+        })
+        .catch((x) => console.log(x));
+    },
+    [],
+  )
+  
   useEffect(() => {
     fetch(
-      "http://127.0.0.1:5000/api/v1/yeastGrowthPlot?" +
-        new URLSearchParams({ id: `${measurementId}` }),
+      "http://127.0.0.1:5000/api/v1/measurementFileNames",
       {
         method: "GET",
       }
     )
-      .then((response) => response.blob())
-      .then((blob) => {
-        setData(blob);
-        setLoading(false);
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+        setMeasurementFileNames(data.measurementFileNames);
+        if (data.measurementFileNames.length > 0)
+        {
+          onFileNameChosen(data.measurementFileNames[0]);
+        }
       })
       .catch((x) => console.log(x));
-  }, [measurementId]);
+  }, [onFileNameChosen]);
 
   const url = useMemo(() => (data ? URL.createObjectURL(data) : ""), [data]);
-
-  /*
-useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/v1/hello", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: JSON.stringify({"growthIntensity": new Date().getTime()%100000 / 1000, "dateTime":  new Date().toISOString()})
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((x) => console.log(x));
-  }, []);
-*/
-
-  if (isLoading) return <p>Loading...</p>;
-  if (!data) return <p>No profile data</p>;
 
   return (
     <Container
@@ -69,11 +77,10 @@ useEffect(() => {
       <Container
         sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
       >
-        <Box sx={{ height: "600px", width: "600px", display: "flex" }}>
-          <img
+        {!isLoading ? (<><Box sx={{ height: "600px", width: "600px", display: "flex" }}>
+          {url ? (<img
             style={{ height: "100%", width: "100%", objectFit: "contain" }}
-            src={`${url}`}
-          ></img>
+            src={`${url}`} />) : (<p>Please choose a measurement</p>)}
         </Box>
         <FormControl  variant="standard" fullWidth sx={{width: "600px"}}>
           <Container
@@ -89,19 +96,15 @@ useEffect(() => {
               <Select
                 labelId="Measurement-label"
                 id="Measurement"
-                value={measurementId}
+                value={chosenMeasurementFileName}
                 label="Measurement"
-                onChange={(e) => {
-                  setMeasurementId(e.target.value as number);
-                }}
+                onChange={(e) => {onFileNameChosen(e.target.value)}}
               >
-                <MenuItem value={1}>1st measurement (1 day)</MenuItem>
-                <MenuItem value={2}>2nd measurement (3 days)</MenuItem>
-                <MenuItem value={3}>3rd measurement (1 day)</MenuItem>
+                {measurementFileNames.map((measurement) => (<MenuItem key={measurement} value={measurement}>{measurement}</MenuItem>))}
               </Select>
             </div>
             <div>
-              <a href={"http://127.0.0.1:5000/api/v1/yeastGrowthPlot?" + new URLSearchParams({ id: `${measurementId}` })}>
+              <a href={"http://127.0.0.1:5000/api/v1/yeastGrowthPlot?" + new URLSearchParams({ id: chosenMeasurementFileName })}>
               <img
                 style={{ height: "2rem", width: "2rem", objectFit: "contain"}}
                 src={downloadSvg.src}
@@ -109,7 +112,7 @@ useEffect(() => {
               </a>
             </div>
           </Container>
-        </FormControl>
+        </FormControl></>) : <p>Loading...</p>}
       </Container>
     </Container>
   );
