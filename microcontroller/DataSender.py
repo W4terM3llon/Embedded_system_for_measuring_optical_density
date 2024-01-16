@@ -12,8 +12,6 @@ class DataSender():
         self.ssid = 'free_viru5.onion'
         self.password = 'okon3456'
         self.sta_if = network.WLAN(network.STA_IF) # Create a station (STA) interface
-        
-        self.dataToSendQueue = [] # WARNING !!!storing data can lead to stack overflow and program crashing if sending is slower than reading!!! # Reading has to be done in reasonably large time intervals. 
 
     def sendMeasurement(self, od, time):
         # "OSError: [Errno 116] ETIMEDOUT: ESP_ERR_TIMEOUT"
@@ -22,13 +20,9 @@ class DataSender():
         data = {'fileName': self.fileName, 'OD600': od, 'time': time}        
         print(f"Sending: {data}...")
         self.__connect__()
-
-        self.dataToSendQueue.append(data)
         
         if not self.sta_if.isconnected():
             return
-        
-        data = self.dataToSendQueue.pop()
 
         json_data = json.dumps(data)
         response = urequests.post(self.url, data=json_data)
@@ -36,10 +30,6 @@ class DataSender():
 
         self.__disconnect__()
         print(f"Sent")
-
-        if len(self.dataToSendQueue) > 0:
-            data = self.dataToSendQueue.pop()
-            sendMeasurement(data['OD600'], data['time'])
 
 
     def __connect__(self):
