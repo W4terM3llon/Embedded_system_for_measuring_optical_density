@@ -15,7 +15,7 @@ class Measurement:
         self.fileLinesCount = 0
 
         self.lastMeasurementTime = float('-inf')
-        self.measurementIntervalInS = 1*1000
+        self.measurementIntervalInS = 10*1000
         self.measurementsOverTimespanSum = 0
         self.measurementsOverTimespanCount = 0
 
