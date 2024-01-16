@@ -14,6 +14,9 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { blob } from "stream/consumers";
 import downloadSvg from "../public/download-svgrepo-com.svg";
 
+const env = process.env.NODE_ENV
+const hostAddress = env == "production" ? '192.168.195.204' : 'localhost';
+
 export function StaticImagePage() {
   const [measurementFileNames, setMeasurementFileNames] = useState<string[]>(
     []
@@ -28,7 +31,7 @@ export function StaticImagePage() {
 
   const fetchData = useCallback((measurementFileName: string) => {
     fetch(
-      "http://127.0.0.1:5000/api/v1/yeastGrowthPlot?" +
+      `http://${hostAddress}:5000/api/v1/yeastGrowthPlot?` +
         new URLSearchParams({ id: measurementFileName }),
       {
         method: "GET",
@@ -50,7 +53,7 @@ export function StaticImagePage() {
       }
     }, 1000);
     return () => clearTimeout(timer);
-  }, [chosenMeasurementFileName, count, fetchData]);
+  }, [chosenMeasurementFileName, count, fetchData, isAutoUpdate]);
 
   const onFileNameChosen = useCallback(
     (measurementFileName: string) => {
@@ -61,7 +64,7 @@ export function StaticImagePage() {
   );
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/v1/measurementFileNames", {
+    fetch(`http://${hostAddress}:5000/api/v1/measurementFileNames`, {
       method: "GET",
     })
       .then((response) => response.json())
@@ -91,7 +94,7 @@ export function StaticImagePage() {
       >
         {!isLoading ? (
           <>
-            <Box sx={{ height: "600px", width: "600px", display: "flex" }}>
+            <Box sx={{ height: {xs: '100%', lg: "600px"}, width: {xs: '100%', lg: "600px"}, display: "flex" }}>
               {url ? (
                 <img
                   style={{
@@ -105,16 +108,17 @@ export function StaticImagePage() {
                 <p>Please choose a measurement</p>
               )}
             </Box>
-            <FormControl variant="standard" sx={{ width: "600px" }}>
+            <FormControl variant="standard" sx={{ width: {xs: '100%', lg: "600px"} }}>
               <Container
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   width: "100%",
+                  flexDirection: {xs: 'column', lg: 'row'},
                 }}
               >
-                <div>
+                <Container sx={{marginTop: {xs: '2rem', lg: '0rem'}}}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -126,8 +130,8 @@ export function StaticImagePage() {
                     }
                     label="Auto update"
                   />
-                </div>
-                <div>
+                </Container>
+                <Container sx={{marginTop: {xs: '2rem', lg: '0rem'}}}>
                   <Select
                     labelId="Measurement-label"
                     id="Measurement"
@@ -143,11 +147,11 @@ export function StaticImagePage() {
                       </MenuItem>
                     ))}
                   </Select>
-                </div>
-                <div>
+                </Container>
+                <Container sx={{marginTop: {xs: '2rem', lg: '0rem'}}}>
                   <a
                     href={
-                      "http://127.0.0.1:5000/api/v1/yeastGrowthPlot?" +
+                      `http://${hostAddress}:5000/api/v1/yeastGrowthPlot?` +
                       new URLSearchParams({ id: chosenMeasurementFileName })
                     }
                   >
@@ -160,7 +164,7 @@ export function StaticImagePage() {
                       src={downloadSvg.src}
                     />
                   </a>
-                </div>
+                </Container>
               </Container>
             </FormControl>
           </>

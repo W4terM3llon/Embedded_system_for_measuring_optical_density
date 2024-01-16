@@ -3,12 +3,12 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
-web_client_url = "http://localhost:3000"
+web_client_url = '*'#"http://localhost:3000"
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    cors = CORS(app, resources={r"*": {"origins": web_client_url + '/*'}})
+    cors = CORS(app, resources={r"*": {"origins": web_client_url}}) # + '/*'
 
     app.config.from_mapping(
         SECRET_KEY='dev',
