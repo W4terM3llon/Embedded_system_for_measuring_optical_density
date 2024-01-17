@@ -6,7 +6,7 @@ from app.controller.RecordYeastGrowthHandler import HandleRecordYeastGrowth
 bp = Blueprint('RecordYeastGrowthData', __name__, url_prefix="/api/v1/")
 
 
-@bp.route('/hello', methods=['POST'])
+@bp.route('/yeastGrowthReadings', methods=['POST'])
 def RecordYeastGrowthData():
     print("RecordYeastGrowthData")
     try:
@@ -14,10 +14,11 @@ def RecordYeastGrowthData():
     except ValidationError as err:
         return jsonify(err.messages), 400
 
-    HandleRecordYeastGrowth(requestBodyData["growthIntensity"], requestBodyData["dateTime"])
+    HandleRecordYeastGrowth(requestBodyData["fileName"], requestBodyData["OD600"], requestBodyData["time"])
 
     return {'message': 'success'}, 200
 
 class RecordYeastGrowthSchema(Schema):
-    growthIntensity = fields.Integer(required=True)
-    dateTime = fields.DateTime(required=True)
+    fileName = fields.String(required=True)
+    OD600 = fields.Float(required=True)
+    time = fields.Integer(required=True)
