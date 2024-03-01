@@ -11,7 +11,7 @@ Server presentation: [Server_presentarion_1.MOV](docs%2FServer_presentarion_1.MO
 
 
 
-## Running test cases
+## Running microcontroller, server and web client
 
 Running the project Requires following steps:
 1. Make sure that your microcontroller runs Micropython.
