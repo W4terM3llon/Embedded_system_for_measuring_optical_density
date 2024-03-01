@@ -1,6 +1,7 @@
 
 # Embedded system for measuring optical density
 This is a project that was created for 'design build 1' course for Bsc. in General Engineering at Technical University of Denmark.
+
 The goal of this project is to measure the optical density of a solution (in this case solution of yeasts). Based on the optical density it is possible to calculate the growth of the yests over time and perform data analysis.
 
 Presentation of the results of this project can be seen here:
